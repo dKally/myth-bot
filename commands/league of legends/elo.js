@@ -4,7 +4,7 @@ const puppeteer = require('puppeteer');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('elo')
-        .setDescription('Insira o nome do jogador para ver o elo.')
+        .setDescription('Insira o nome do jogador para ver seu elo.')
         .addStringOption(option =>
             option
                 .setName('nome')
@@ -17,7 +17,7 @@ module.exports = {
             const browser = await puppeteer.launch({ headless: "new" });
             const page = await browser.newPage();
             await page.goto(`https://blitz.gg/lol/profile/br1/${target}`);
-            await new Promise(resolve => setTimeout(resolve, 500));
+
 
             let player = target;
 
@@ -54,18 +54,21 @@ module.exports = {
             await browser.close();
 
             if (topLineText) {
+
                 const embed = {
-                    title:`Elo de ${player}`,
+                    title: player,
+                    color: 0x9900ff,
                     fields:[
                         {
                             name:'Rank Atual:',
                             value: topLineText.rank + topLineText.pdl
                         },{
                             name:'WinRate',
-                            value: winRates[0] + ' ' + winRates[1]
+                            value: winRates[0].replace(/[a-zA-Z]/g, '') + ' | ' + winRates[1]
                         }
                     ]
                 }
+                console.log(embed)
 
                 await interaction.reply({
                     embeds: [embed],
