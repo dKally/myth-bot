@@ -10,13 +10,36 @@ module.exports = {
                 .setName('nome')
                 .setDescription('Nome do jogador')
                 .setRequired(true)
+        ).addStringOption(option =>
+            option
+                .setName('servidor')
+                .setDescription('Escolha um servidor, "/servidores" (opcional)')
         ),
+          
     async execute(interaction) {
+        const embedLoading = {
+            title: "Carregando dados...",
+            description: "Por favor, aguarde.",
+            color: 0x9900ff,
+            
+        }
+        const reply = await interaction.reply({
+            embeds: [embedLoading],
+        });
         try {
             const target = interaction.options.getString('nome');
+            function getServerOption(interaction) {
+                const serverOption = interaction.options.getString('servidor');
+                return serverOption || 'br1';
+            }
+            const server = getServerOption(interaction)
+
+            
+            console.log(server)
             const browser = await puppeteer.launch({ headless: "new" });
             const page = await browser.newPage();
-            await page.goto(`https://blitz.gg/lol/profile/br1/${target}`);
+            await page.goto(`https://blitz.gg/lol/profile/${server}/${target}`);
+            console.log(`https://blitz.gg/lol/profile/${server}/${target}`)
 
 
             let player = target;
@@ -61,7 +84,7 @@ module.exports = {
                     fields:[
                         {
                             name:'Rank Atual:',
-                            value: topLineText.rank + topLineText.pdl
+                            value: topLineText.rank + ' | ' + topLineText.pdl
                         },{
                             name:'WinRate',
                             value: winRates[0].replace(/[a-zA-Z]/g, '') + ' | ' + winRates[1]
@@ -70,15 +93,30 @@ module.exports = {
                 }
                 console.log(embed)
 
-                await interaction.reply({
+                await reply.edit({
                     embeds: [embed],
                 });
             } else {
-                await interaction.reply('Rank não encontrado...');
+                const embedNotFound = {
+                    title: "Rank não encontrado... =(",
+                    description: "Verifique se o nome do player está certo ou se o player realmente existe. Se o erro persistir, entre em contado com o desenvolvedor do bot: kaczl",
+                    color: 0x9900ff,
+                    
+                }
+                await reply.edit({
+                    embeds: [embedNotFound],
+                });
             }
         } catch (error) {
             console.error(error);
-            await interaction.reply('Ocorreu um erro ao buscar o rank do jogador.');
+            const embedError = {
+                title: "Ocorreu algum erro... =(",
+                description: "Verifique se o nome do player está certo ou se o player realmente existe. Se o erro persistir, entre em contado com o desenvolvedor do bot: kaczl",
+                color: 0x9900ff,
+            }
+            await interaction.reply({
+                embeds: [embedError],
+            });
         }
     },
 };
