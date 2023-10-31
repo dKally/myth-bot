@@ -14,7 +14,15 @@ module.exports = {
             option
                 .setName('servidor')
                 .setDescription('Escolha um servidor, "/servidores" (opcional)')
-        ),
+        ).addStringOption(option =>
+            option
+                .setName('jogo')
+                .setDescription('Escolha um jogo (opcional)')
+                .addChoices(
+                    { name: 'League of Legends', value: 'lol' },
+                    { name: 'Team Tatics Fight', value: 'tft' },
+                )
+            ),
           
     async execute(interaction) {
         const embedLoading = {
@@ -28,6 +36,17 @@ module.exports = {
         });
         try {
             const target = interaction.options.getString('nome');
+            const selectedGame = interaction.options.getString('jogo');
+            function selectedGameFunction(){
+                if (selectedGame === 'lol') {
+                    return 'lol'
+                } else if (selectedGame === 'tft') {
+                    return 'tft'
+                } else {
+                    return 'lol'
+                }
+            }
+            
             function getServerOption(interaction) {
                 const serverOption = interaction.options.getString('servidor');
                 return serverOption || 'br1';
@@ -38,8 +57,8 @@ module.exports = {
             console.log(server)
             const browser = await puppeteer.launch({ headless: "new" });
             const page = await browser.newPage();
-            await page.goto(`https://blitz.gg/lol/profile/${server}/${target}`);
-            console.log(`https://blitz.gg/lol/profile/${server}/${target}`)
+            await page.goto(`https://blitz.gg/${selectedGameFunction()}/profile/${server}/${target}`);
+            console.log(`https://blitz.gg/${selectedGameFunction()}/profile/${server}/${target}`)
 
 
             let player = target;
