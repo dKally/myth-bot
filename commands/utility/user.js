@@ -3,38 +3,48 @@ const { SlashCommandBuilder } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('user')
-    .setDescription('Provides information about the user.'),
+    .setDescription('Get information about a user.')
+    .addUserOption(option =>
+      option.setName('target')
+        .setDescription('User to get information about')
+    ),
   async execute(interaction) {
-    const user = interaction.user;
-    const joinedAt = new Date(interaction.member.joinedAt);
+    const user = interaction.options.getUser('target') || interaction.user;
 
-    const options = {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-      timeZoneName: 'short',
-    };
+    // Certifique-se de que o usuário é um membro do servidor antes de acessar a data de entrada.
+    if (interaction.guild) {
+      const member = interaction.guild.members.cache.get(user.id);
 
-    const formattedJoinDate = new Intl.DateTimeFormat('en-US', options).format(joinedAt);
+      if (member) {
+        const embed = {
+          title: "**" + user.globalName + "**",
+          description: "`@" + user.username + "`",
+          fields: [
+            {
+              name: 'ID:',
+              value: user.id,
+            },
+            {
+              name: 'Conta Criada em:',
+              value: user.createdAt.toLocaleDateString(),
+            },
+            {
+              name: 'Entrou no Servidor em:',
+              value: new Date(member.joinedAt).toLocaleDateString(),
+            }
+          ],
+          thumbnail: {
+            url: user.displayAvatarURL({ dynamic: true, format: 'png' }),
+          },
+          color: 0x9900ff,
+        };
 
-    const embed = {
-      title: user.username,
-      fields: [
-        {
-          name: 'Data de entrada no servidor:',
-          value: formattedJoinDate,
-        },
-      ],
-      thumbnail: {
-        url: user.displayAvatarURL({ dynamic: true, format: 'png' }),
-      },
-      color: 0x9900ff,
-    };
-
-    await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed] });
+      } else {
+        await interaction.reply('Esse usuário não é membro desse servidor.');
+      }
+    } else {
+      await interaction.reply('Esse comando deve ser executado em um servidor.');
+    }
   },
 };
