@@ -3,17 +3,43 @@ const { SlashCommandBuilder } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('user')
-    .setDescription('Get information about a user.')
+    .setDescription('Ver informações de um usuário.')
     .addUserOption(option =>
       option.setName('target')
-        .setDescription('User to get information about')
+        .setDescription('Usuário alvo. (opcional)')
     ),
   async execute(interaction) {
     const user = interaction.options.getUser('target') || interaction.user;
 
-    // Certifique-se de que o usuário é um membro do servidor antes de acessar a data de entrada.
     if (interaction.guild) {
       const member = interaction.guild.members.cache.get(user.id);
+
+      if(user.bot){
+        const embed = {
+          title: "**" + user.username + "**",
+          description: "`O alvo selecionado é um bot.`",
+          fields: [
+            {
+              name: 'ID:',
+              value: user.id,
+            },
+            {
+              name: 'Bot Criado em:',
+              value: user.createdAt.toLocaleDateString(),
+            },
+            {
+              name: 'Entrou no Servidor em:',
+              value: new Date(member.joinedAt).toLocaleDateString(),
+            }
+          ],
+          thumbnail: {
+            url: user.displayAvatarURL({ dynamic: true, format: 'png' }),
+          },
+          color: 0x9900ff,
+        };
+
+        return await interaction.reply({ embeds: [embed] });
+      }
 
       if (member) {
         const embed = {
