@@ -24,7 +24,7 @@ for (const folder of commandFolders) {
 }
 
 client.once(Events.ClientReady, () => {
-	console.log('Ready!');
+    console.log(`Rodando em ${client.user.tag}`)
 });
 
 client.on(Events.InteractionCreate, async interaction => {
